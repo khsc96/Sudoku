@@ -2,6 +2,7 @@
 # solver uses backtracking algorithm
 
 import pprint
+from random import shuffle, randint
 
 board = [
     [7, 8, 0, 4, 0, 0, 1, 2, 0],
@@ -14,13 +15,40 @@ board = [
     [1, 2, 0, 0, 0, 7, 4, 0, 0],
     [0, 4, 9, 2, 0, 6, 0, 0, 7]]
 
+empty_board = [
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0]
+]
+
 # Make a new game with new board
-def generate_boarad():
-    pass
+def generate_filled_board(bo):
+    empty_slot = find_empty_slot(empty_board)
+    if not empty_slot:
+        return True
+    row, col = empty_slot
+    number_list = list(range(1,10))
+    shuffle(number_list)
+    for value in number_list:
+        if (valid_input(bo, value, empty_slot)):
+            bo[row][col] = value
+            if generate_filled_board(bo):
+                return True
+            bo[row][col] = 0
+
+    print("unable to solve")
+    return False
+
 
 # Solve the game
-def solver(board):
-    empty_slot = find_empty_slot(board)
+def solver(bo):
+    empty_slot = find_empty_slot(bo)
 
     if not empty_slot:
         # Finish solving Sudoku
@@ -29,37 +57,32 @@ def solver(board):
     row, col = empty_slot
 
     for i in range(1, 10):
-        if valid_input(board, i, empty_slot):
-            print(i)
-            print(empty_slot)
-            board[row][col] = i
-            print("--- one iteration ---")
-            print_board(board)
-
-            if solver(board):
+        if valid_input(bo, i, empty_slot):
+            bo[row][col] = i
+            if solver(bo):
                 return True
             
-            board[row][col] = 0
+            bo[row][col] = 0
 
     return False
 
 
-def find_empty_slot(board):
-    for i in range(len(board)):
-        for j in range(len(board[0])):
-            if board[i][j] == 0:
+def find_empty_slot(bo):
+    for i in range(len(bo)):
+        for j in range(len(bo[0])):
+            if bo[i][j] == 0:
                 return (i, j)
 
     return None
 
-def valid_input(board, input, pos):
+def valid_input(bo, input, pos):
     row_pos = pos[0]
     col_pos = pos[1]
 
-    for i in range(len(board[0])):
-        if col_pos != i and board[row_pos][i] == input:
+    for i in range(len(bo[0])):
+        if col_pos != i and bo[row_pos][i] == input:
             return False   
-        if row_pos != i and board[i][col_pos] == input:
+        if row_pos != i and bo[i][col_pos] == input:
             return False    
 
     box_row_pos = pos[0] // 3
@@ -67,24 +90,38 @@ def valid_input(board, input, pos):
 
     for i in range(box_row_pos * 3, box_row_pos * 3 + 3):
         for j in range(box_col_pos * 3, box_col_pos * 3 + 3):
-            if input == board[i][j] and (i, j) != pos:
+            if input == bo[i][j] and (i, j) != pos:
                 return False
     return True
 
-def print_board(board): 
-    for i in range(len(board)):
+def print_board(bo): 
+    for i in range(len(bo)):
         if i % 3 == 0 and i != 0:
             print("- - - - - - - - - - - - ")
 
-        for j in range(len(board[0])):
+        for j in range(len(bo[0])):
             if j % 3 == 0 and j != 0:
                 print(" | ", end="")
             if j == 8:
-                print(board[i][j])
+                print(bo[i][j])
             else:
-                print(str(board[i][j]) + " ", end="")
+                print(str(bo[i][j]) + " ", end="")
 
-print_board(board)
-print("------------------------")
-solver(board)
-print_board(board)
+def insert_number(bo, input, pos):
+    row = pos[0]
+    col = pos[1]
+    if bo[row][col] != 0:
+        print("Position filled, try another position")
+    else:
+        if valid_input(bo, input, pos):
+            bo[row][col] = input
+        else:
+            print("Invalid input, try another number")
+
+def remove_number(pos):
+    row = pos[0]
+    col = pos[1]
+    board[row][col] = 0
+
+generate_filled_board(empty_board)
+print_board(empty_board)
