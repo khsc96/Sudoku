@@ -3,7 +3,7 @@
 
 import pprint
 from random import shuffle, randint
-
+from copy import deepcopy
 board = [
     [7, 8, 0, 4, 0, 0, 1, 2, 0],
     [6, 0, 0, 0, 7, 5, 0, 0, 9],
@@ -27,6 +27,8 @@ empty_board = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0]
 ]
 
+counter = 0 
+
 # Make a new game with new board
 def generate_filled_board(bo):
     empty_slot = find_empty_slot(empty_board)
@@ -45,9 +47,9 @@ def generate_filled_board(bo):
     print("unable to solve")
     return False
 
-
 # Solve the game
 def solver(bo):
+    global counter
     empty_slot = find_empty_slot(bo)
 
     if not empty_slot:
@@ -118,10 +120,37 @@ def insert_number(bo, input, pos):
         else:
             print("Invalid input, try another number")
 
-def remove_number(pos):
+def remove_number(bo, pos):
     row = pos[0]
     col = pos[1]
-    board[row][col] = 0
+    number_being_removed = bo[row][col]
+    bo[row][col] = 0
+    return number_being_removed
+
+# Try to make an empty half-filled board
+
+def generate_playable_board(bo):
+    attempts = 5
+    global counter
+    while attempts > 0:
+        row, col = (randint(0,8), randint(0,8))
+        while bo[row][col] == 0:
+            row, col = (randint(0,8), randint(0,8))
+        back_up = remove_number(bo, (row, col))
+        copy_board = deepcopy(bo)
+        counter = 0
+        solver(copy_board)
+        if counter != 1:
+            bo[row][col] = back_up
+            attempts -= 1
+    print_board(bo)
 
 generate_filled_board(empty_board)
-print_board(empty_board)
+playable_board = deepcopy(empty_board)
+generate_playable_board(playable_board)
+print("===================================")
+print_board(playable_board)
+# print(counter)
+# solver(board)
+# print(counter)
+# print_board(board)
